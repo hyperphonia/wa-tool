@@ -24,8 +24,9 @@ There is no installer, no telemetry and no account.
 
 ## Controls
 
-The knob is the output gain. Double-click it to return to 0 dB. The arc grows outward from
-the 0 dB mark, so a cut reads counter-clockwise and a boost clockwise.
+The knob is the output gain. Double-click it to return to 0 dB, or right-click it for a menu
+that takes an exact value. The arc grows outward from the 0 dB mark, so a cut reads
+counter-clockwise and a boost clockwise.
 
 INVERT flips the polarity of both channels.
 

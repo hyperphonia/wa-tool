@@ -1,6 +1,8 @@
 #include "PluginEditor.h"
 #include "BinaryData.h"
 
+#include <cstdlib>
+
 namespace
 {
     constexpr int editorWidth  = 280;
@@ -54,6 +56,30 @@ namespace
     }
 }
 
+void ToolAudioProcessorEditor::GainKnob::mouseDown (const juce::MouseEvent& e)
+{
+    contextMenuClick = e.mods.isPopupMenu();
+
+    if (contextMenuClick)
+    {
+        if (onContextMenu != nullptr)
+            onContextMenu();
+
+        return;
+    }
+
+    juce::Slider::mouseDown (e);
+}
+
+void ToolAudioProcessorEditor::GainKnob::mouseUp (const juce::MouseEvent& e)
+{
+    // The drag state was never armed for a context click, so the base class must not see it.
+    if (std::exchange (contextMenuClick, false))
+        return;
+
+    juce::Slider::mouseUp (e);
+}
+
 void ToolAudioProcessorEditor::ValueReadout::setValue (float newValue)
 {
     if (! juce::approximatelyEqual (value, newValue))
@@ -94,6 +120,7 @@ ToolAudioProcessorEditor::ToolAudioProcessorEditor (ToolAudioProcessor& processo
     gainKnob.setMouseDragSensitivity (240);
     gainKnob.setDoubleClickReturnValue (true, 0.0);
     gainKnob.setTitle ("Gain");
+    gainKnob.onContextMenu = [this] { showGainMenu(); };
     addAndMakeVisible (gainKnob);
 
     gainKnob.onValueChange = [this]
@@ -158,6 +185,62 @@ void ToolAudioProcessorEditor::paint (juce::Graphics& g)
     g.setOpacity (logoOpacity);
     g.drawImage (scaledLogo, logoBounds());
     g.setOpacity (1.0f);
+}
+
+void ToolAudioProcessorEditor::showGainMenu()
+{
+    juce::PopupMenu menu;
+    menu.addItem (1, "Set value...");
+    menu.addSeparator();
+    menu.addItem (2, "Reset to 0 dB");
+
+    menu.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (gainKnob).withMousePosition(),
+                        [safe = juce::Component::SafePointer<ToolAudioProcessorEditor> (this)] (int result)
+                        {
+                            if (safe == nullptr)
+                                return;
+
+                            if (result == 1)
+                                safe->promptForGain();
+                            else if (result == 2)
+                                safe->gainKnob.setValue (0.0, juce::sendNotificationSync);
+                        });
+}
+
+void ToolAudioProcessorEditor::promptForGain()
+{
+    auto* window = new juce::AlertWindow ("Gain", "Enter a value in dB", juce::MessageBoxIconType::NoIcon, this);
+
+    window->addTextEditor ("value", juce::String (gainKnob.getValue(), 1));
+    window->addButton ("OK", 1, juce::KeyPress (juce::KeyPress::returnKey));
+    window->addButton ("Cancel", 0, juce::KeyPress (juce::KeyPress::escapeKey));
+
+    window->enterModalState (true, juce::ModalCallbackFunction::create (
+        [editor = juce::Component::SafePointer<ToolAudioProcessorEditor> (this),
+         alert = juce::Component::SafePointer<juce::AlertWindow> (window)] (int result)
+        {
+            if (editor == nullptr || alert == nullptr || result != 1)
+                return;
+
+            editor->setGainFromText (alert->getTextEditorContents ("value"));
+        }), true);
+}
+
+void ToolAudioProcessorEditor::setGainFromText (const juce::String& text)
+{
+    auto trimmed = text.trim();
+
+    if (trimmed.endsWithIgnoreCase ("db"))
+        trimmed = trimmed.dropLastCharacters (2).trim();
+
+    const auto utf8 = trimmed.toStdString();
+    char* end = nullptr;
+    const auto parsed = std::strtof (utf8.c_str(), &end);
+
+    if (end == utf8.c_str() || *end != '\0')
+        return;
+
+    gainKnob.setValue (parsed, juce::sendNotificationSync);
 }
 
 void ToolAudioProcessorEditor::resized()
