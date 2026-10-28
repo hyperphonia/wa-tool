@@ -1,0 +1,65 @@
+name: Bug report
+description: Something behaves incorrectly
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. The more precise the report, the faster it gets fixed.
+
+  - type: input
+    id: version
+    attributes:
+      label: WA Tool version
+      placeholder: v1.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: host
+    attributes:
+      label: DAW and version
+      placeholder: Bitwig 5.2.7 / Reaper 7.19 / Standalone
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: OS and version
+      placeholder: Windows 11 23H2 / macOS 14.5 / Ubuntu 24.04
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Insert WA Tool on a stereo track
+        2. Set gain to -6 dB
+        3. Toggle MONO while audio plays
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Sample rate, buffer size, screenshots, audio examples.
+    validations:
+      required: false

@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest a control, a behaviour, or a fix
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This plugin is deliberately small. Requests that keep the window to one knob
+        and a couple of switches are much more likely to land than ones that add pages.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do
+      description: Describe the situation, not the solution.
+      placeholder: I need to align two mics and there is no way to delay one channel.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you have in mind
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you do today instead
+      description: The current workaround tells me how much the feature is worth.
+    validations:
+      required: false
